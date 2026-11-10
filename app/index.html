@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <p class="eyebrow">Team overview</p>
+      <h1>Project Pulse</h1>
+      <p>Illustrative examples only — these are not confirmed team project details.</p>
+    </header>
+
+    <main class="dashboard" aria-labelledby="projects-heading">
+      <section aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <h2 id="projects-heading">Projects</h2>
+          <p>Current status, priorities, and recent activity at a glance.</p>
+        </div>
+        <p id="dashboard-state" role="status" aria-live="polite" aria-atomic="true">
+          Loading project data…
+        </p>
+        <div id="project-grid" class="project-grid" aria-busy="true"></div>
+      </section>
+    </main>
+
+    <script>
+      const stateElement = document.querySelector("#dashboard-state");
+      const projectGrid = document.querySelector("#project-grid");
+
+      function showState(message, role = "status") {
+        stateElement.textContent = message;
+        stateElement.setAttribute("role", role);
+      }
+
+      function displayValue(project, field, fallback) {
+        const value = project[field];
+        if (typeof value === "string" && value.trim()) {
+          return value.trim();
+        }
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return String(value);
+        }
+        return fallback;
+      }
+
+      function renderProject(project, index) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+
+        const heading = document.createElement("h3");
+        heading.className = "project-name";
+        heading.textContent = displayValue(project, "name", `Untitled project ${index + 1}`);
+
+        const statusValue = displayValue(project, "status", "Not specified");
+        const statusToken = statusValue.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        const status = document.createElement("span");
+        status.className = `project-status status-${statusToken || "unspecified"}`;
+        status.setAttribute("data-status", statusToken || "unspecified");
+        status.textContent = `Status: ${statusValue}`;
+
+        const priorityValue = displayValue(project, "priority", "Not specified");
+        const priorityToken = priorityValue.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        const priority = document.createElement("span");
+        priority.className = `project-priority priority-${priorityToken || "unspecified"}`;
+        priority.setAttribute("data-priority", priorityToken || "unspecified");
+        priority.textContent = `Priority: ${priorityValue}`;
+
+        const indicators = document.createElement("div");
+        indicators.append(status, priority);
+
+        const owner = document.createElement("p");
+        owner.className = "project-owner";
+        owner.textContent = `Owner: ${displayValue(project, "owner", "Unassigned")}`;
+
+        const activity = document.createElement("p");
+        activity.className = "project-activity";
+        activity.textContent = `Recent activity: ${displayValue(project, "recentActivity", "No recent activity reported.")}`;
+
+        const summary = document.createElement("p");
+        summary.className = "project-summary";
+        summary.textContent = displayValue(project, "summary", "No summary provided.");
+
+        card.append(heading, indicators, owner, activity, summary);
+        return card;
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error(`The project data request failed (${response.status}).`);
+          }
+
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error('The project data must contain a "projects" array.');
+          }
+
+          projectGrid.replaceChildren();
+          if (data.projects.length === 0) {
+            showState("No projects to display yet.");
+            return;
+          }
+
+          data.projects.forEach((project, index) => {
+            const validProject = project && typeof project === "object" && !Array.isArray(project)
+              ? project
+              : {};
+            projectGrid.append(renderProject(validProject, index));
+          });
+          showState(`${data.projects.length} project${data.projects.length === 1 ? "" : "s"} loaded.`);
+        } catch (error) {
+          projectGrid.replaceChildren();
+          const message = error instanceof SyntaxError
+            ? "Project data is not valid JSON. Check project-data.json and try again."
+            : error.message || "Project data could not be loaded.";
+          showState(message, "alert");
+        } finally {
+          projectGrid.setAttribute("aria-busy", "false");
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>

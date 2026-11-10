@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "name": "Northstar onboarding",
+      "owner": "Example owner — replace with confirmed team data",
+      "status": "On track",
+      "recentActivity": "Example: drafted the first-run checklist",
+      "priority": "Medium",
+      "summary": "Illustrative example for organizing a smoother contributor onboarding experience."
+    },
+    {
+      "name": "Atlas reporting",
+      "owner": "Example owner — replace with confirmed team data",
+      "status": "Needs attention",
+      "recentActivity": "Example: reviewing feedback on the reporting layout",
+      "priority": "High",
+      "summary": "Illustrative example for bringing project updates into one easy-to-scan report."
+    },
+    {
+      "name": "Beacon knowledge base",
+      "owner": "Example owner — replace with confirmed team data",
+      "status": "Planning",
+      "recentActivity": "Example: collecting topics for the initial content outline",
+      "priority": "Low",
+      "summary": "Illustrative example for making shared team guidance easier to find and maintain."
+    }
+  ]
+}
